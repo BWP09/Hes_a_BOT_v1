@@ -193,6 +193,8 @@ async def on_message(message):
                 elif args2.startswith("response_channel:"):
                     bl_response_channel_id = int(args2.split("response_channel: ")[1])
                     append_yaml("data/config/blacklist.yml", "response_channel", bl_response_channel_id)
+                
+                await message.add_reaction("☑️")
 
             if args1 == "remove":
                 if args2.startswith("user:"):
@@ -231,6 +233,8 @@ async def on_message(message):
                     update_blacklist()
                     if blacklist_UPDATED["response_channel"] == None:
                         update_yaml("data/config/blacklist.yml", "response_channel", [""])
+                    
+                await message.add_reaction("☑️")
         
         except Exception as e:
             last_error_message = e
