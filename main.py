@@ -164,7 +164,7 @@ async def on_message(message):
     log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
     print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
 
-    if author == client.user: return
+    if author_id == 947343189352796220: return
 
     elif user_message.lower().startswith(f"{PREFIX} blacklist"):
         try:           
@@ -241,6 +241,7 @@ async def on_message(message):
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
 
+    
     elif server_id in bl_server: return
     elif channel_id in bl_channel: return
     elif author_id in bl_user: return
@@ -423,6 +424,7 @@ async def on_message(message):
 
     elif server_id in bl_response_server: return
     elif channel_id in bl_response_channel: return
+    elif author_id == 947343189352796220: return
 
 
     elif user_message.lower().count("kid") > 0:

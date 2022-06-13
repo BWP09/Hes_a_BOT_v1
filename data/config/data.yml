@@ -1,5 +1,5 @@
-kid_counter: 0
-last_error_message: '''int'' object has no attribute ''append'''
-snipe_message: '[06-12-2022 20:00:54]: [Pynoly Development: bot-testing]: BWP09: \n
+kid_counter: 1
+last_error_message: list index out of range
+snipe_message: '[06-13-2022 05:20:32]: [Dollar General: general]: explxation<3: diarrea
 
   '
