@@ -2,7 +2,8 @@ import discord, yaml, datetime, os, atexit, asyncio, random
 import colorama as col
 from discord.utils import get
 
-#== ADD BLACKLIST ==#
+#= By Brandon Payne or BWP09 =#
+#= Github repo for this (terrible) project: https://github.com/BWP09/Hes_a_BOT/tree/master =#
 
 def update_yaml(yaml_file, key, value):
     with open(yaml_file, "r") as f:
@@ -30,7 +31,6 @@ def update_blacklist():
     global blacklist_UPDATED
     with open("data/config/blacklist.yml", "r") as file:
         blacklist_UPDATED = yaml.safe_load(file)
-
 
 def update_config():
     global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR
@@ -84,7 +84,6 @@ def file_write(file_name, text):
         file.seek(0)
         file.truncate()
         file.write(text)
-
 def file_read(file_name):
     with open(file_name, "r", encoding = "utf-8") as file:
         return file.read()
@@ -194,8 +193,6 @@ async def on_message(message):
                 elif args2.startswith("response_channel:"):
                     bl_response_channel_id = int(args2.split("response_channel: ")[1])
                     append_yaml("data/config/blacklist.yml", "response_channel", bl_response_channel_id)
-                
-                await message.add_reaction("☑️")
 
             if args1 == "remove":
                 if args2.startswith("user:"):
@@ -234,18 +231,11 @@ async def on_message(message):
                     update_blacklist()
                     if blacklist_UPDATED["response_channel"] == None:
                         update_yaml("data/config/blacklist.yml", "response_channel", [""])
-                
-                await message.add_reaction("☑️")
         
         except Exception as e:
             last_error_message = e
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
-
-    elif user_message.startswith(f"{PREFIX} WTF IS BLACKLIST['CHANNEL']"):
-        with open("data/config/blacklist.yml", "r") as file:
-                blacklist = yaml.safe_load(file)
-        await message.channel.send(f">>{str(blacklist['channel'])}<<")
 
     elif server_id in bl_server: return
     elif channel_id in bl_channel: return
@@ -260,10 +250,8 @@ async def on_message(message):
     elif user_message.lower().startswith(f"{PREFIX} stop"):
         if author_id == ADMIN_ID:
             try: 
-                if message.guild.voice_client:
-                    await message.guild.voice_client.disconnect()
-            except:
-                pass
+                if message.guild.voice_client: await message.guild.voice_client.disconnect()
+            except: pass
             
             await client.change_presence(status=discord.Status.invisible)
             await message.add_reaction("☑️")
@@ -287,7 +275,6 @@ async def on_message(message):
         `{PREFIX} snipe` - shows the last deleted message
         `{PREFIX} blacklist | <"add", "remove"> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
         v{VERSION}
-
         By BWP09#5091
         """, color=COLOR)
         await message.channel.send(embed = embed_var, reference = message)
