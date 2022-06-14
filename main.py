@@ -271,16 +271,30 @@ async def on_message(message):
         `{PREFIX} help` - shows this message
         `{PREFIX} stop` - stops He's a BOT
         `{PREFIX} test` - sends a message to test the bot
+        `{PREFIX} <"join", "leave"> <<| "channel: [voice channel ID]">> ` - joins or leaves the voice channel
         `{PREFIX} id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
         `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text]">` - changes the bot's status
         `{PREFIX} spam | <amount> / <text>` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
         `{PREFIX} megaspam | <amount> / <text>` - spams a message to the channel (many smaller messages, amount of messages cannot be more than 50)
+        `{PREFIX} role | <"add", "remove"> / [role name]` - add or remove a role from yourself
         `{PREFIX} k*dcounter` - display the k*d counter
         `{PREFIX} last_error` - shows the technical last error message
         `{PREFIX} snipe` - shows the last deleted message
         `{PREFIX} blacklist | <"add", "remove"> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
         v{VERSION}
+        
+        Key:
+            <> - required args
+            <<>> - optional args
+            [] - insert a value
+
         By BWP09#5091
+        Github: https://github.com/BWP09/Hes_a_BOT
+
+        planned features:
+            hesa political
+            hesa face reveal
+            Hesa braindead
         """, color=COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
@@ -361,7 +375,7 @@ async def on_message(message):
             await message.add_reaction("❌")
 
     elif user_message.lower().startswith(f"{PREFIX} join"):
-        if user_message.lower().count("|") == 0:
+        if user_message.lower().count(" | ") == 0:
             if message.author.voice:
                 channel = message.author.voice.channel
                 await channel.connect()
