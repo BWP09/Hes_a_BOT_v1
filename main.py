@@ -3,7 +3,7 @@ import colorama as col
 from discord.utils import get
 
 #= By Brandon Payne or BWP09 =#
-#= Github repo for this (terrible) project: https://github.com/BWP09/Hes_a_BOT/tree/master =#
+#= Github repo for this (terrible) project: https://github.com/BWP09/Hes_a_BOT =#
 
 def update_yaml(yaml_file, key, value):
     with open(yaml_file, "r") as f:
@@ -169,66 +169,66 @@ async def on_message(message):
     elif user_message.lower().startswith(f"{PREFIX} blacklist"):
         try:           
             args = user_message.lower().split(" | ")[1]
-            args1 = args.split(" / ")[0]
-            args2 = args.split(" / ")[1]
-            if args1 == "add":
-                if args2.startswith("user:"):
-                    bl_user_id = int(args2.split("user: ")[1])
+            arg1 = args.split(" / ")[0]
+            arg2 = args.split(" / ")[1]
+            if arg1 == "add":
+                if arg2.startswith("user:"):
+                    bl_user_id = int(arg2.split("user: ")[1])
                     append_yaml("data/config/blacklist.yml", "user", bl_user_id)
                 
-                # elif args2.startswith("role:"): pass
+                # elif arg2.startswith("role:"): pass
                 
-                elif args2.startswith("server:"):
-                    bl_server_id = int(args2.split("server: ")[1])
+                elif arg2.startswith("server:"):
+                    bl_server_id = int(arg2.split("server: ")[1])
                     append_yaml("data/config/blacklist.yml", "server", bl_server_id)
                 
-                elif args2.startswith("channel:"):
-                    bl_channel_id = int(args2.split("channel: ")[1])
+                elif arg2.startswith("channel:"):
+                    bl_channel_id = int(arg2.split("channel: ")[1])
                     append_yaml("data/config/blacklist.yml", "channel", bl_channel_id)
                 
-                elif args2.startswith("response_server:"):
-                    bl_response_server_id = int(args2.split("response_server: ")[1])
+                elif arg2.startswith("response_server:"):
+                    bl_response_server_id = int(arg2.split("response_server: ")[1])
                     append_yaml("data/config/blacklist.yml", "response_server", bl_response_server_id)
                 
-                elif args2.startswith("response_channel:"):
-                    bl_response_channel_id = int(args2.split("response_channel: ")[1])
+                elif arg2.startswith("response_channel:"):
+                    bl_response_channel_id = int(arg2.split("response_channel: ")[1])
                     append_yaml("data/config/blacklist.yml", "response_channel", bl_response_channel_id)
                 
                 await message.add_reaction("☑️")
 
-            if args1 == "remove":
-                if args2.startswith("user:"):
-                    bl_user_id = int(args2.split("user: ")[1])
+            if arg1 == "remove":
+                if arg2.startswith("user:"):
+                    bl_user_id = int(arg2.split("user: ")[1])
                     remove_yaml("data/config/blacklist.yml", "user", bl_user_id)
                     update_blacklist()
                     if blacklist_UPDATED["user"] == None:
                         update_yaml("data/config/blacklist.yml", "user", [""])
                 
-                # elif args2.startswith("role:"): pass
+                # elif arg2.startswith("role:"): pass
                 
-                elif args2.startswith("server:"):
-                    bl_server_id = int(args2.split("server: ")[1])
+                elif arg2.startswith("server:"):
+                    bl_server_id = int(arg2.split("server: ")[1])
                     remove_yaml("data/config/blacklist.yml", "server", bl_server_id)
                     update_blacklist()
                     if blacklist_UPDATED["server"] == None:
                         update_yaml("data/config/blacklist.yml", "server", [""])
                 
-                elif args2.startswith("channel:"):
-                    bl_channel_id = int(args2.split("channel: ")[1])
+                elif arg2.startswith("channel:"):
+                    bl_channel_id = int(arg2.split("channel: ")[1])
                     remove_yaml("data/config/blacklist.yml", "channel", bl_channel_id)
                     update_blacklist()
                     if blacklist_UPDATED["channel"] == None:
                         update_yaml("data/config/blacklist.yml", "channel", [""])
 
-                elif args2.startswith("response_server:"):
-                    bl_response_server_id = int(args2.split("response_server: ")[1])
+                elif arg2.startswith("response_server:"):
+                    bl_response_server_id = int(arg2.split("response_server: ")[1])
                     remove_yaml("data/config/blacklist.yml", "response_server", bl_response_server_id)
                     update_blacklist()
                     if blacklist_UPDATED["response_server"] == None:
                         update_yaml("data/config/blacklist.yml", "response_server", [""])
 
-                elif args2.startswith("response_channel:"):
-                    bl_response_channel_id = int(args2.split("response_channel: ")[1])
+                elif arg2.startswith("response_channel:"):
+                    bl_response_channel_id = int(arg2.split("response_channel: ")[1])
                     remove_yaml("data/config/blacklist.yml", "response_channel", bl_response_channel_id)
                     update_blacklist()
                     if blacklist_UPDATED["response_channel"] == None:
@@ -258,20 +258,20 @@ async def on_message(message):
                 if message.guild.voice_client: await message.guild.voice_client.disconnect()
             except: pass
             
-            await client.change_presence(status=discord.Status.invisible)
+            await client.change_presence(activity = discord.Game("I am offline"))
             await message.add_reaction("☑️")
             print(f"{col.Style.RESET_ALL}Stopped")
-            await client.destroy()
+            await client.logout()
         else:
             await message.channel.send("hehe no no!")
             await message.add_reaction("❌")
 
     elif user_message.lower().startswith(f"{PREFIX} help"):
-        embed_var = discord.Embed(title="Help Command", description=f"""
+        embed_var = discord.Embed(title = "Help Command", description = f"""
         `{PREFIX} help` - shows this message
         `{PREFIX} stop` - stops He's a BOT
         `{PREFIX} test` - sends a message to test the bot
-        `{PREFIX} <"join", "leave"> <<| "channel: [voice channel ID]">> ` - joins or leaves the voice channel
+        `{PREFIX} <"join", "leave"> <<| "channel: [voice channel ID]">>` - joins or leaves the voice channel
         `{PREFIX} id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
         `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text]">` - changes the bot's status
         `{PREFIX} spam | <amount> / <text>` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
@@ -284,17 +284,19 @@ async def on_message(message):
         v{VERSION}
         
         Key:
-            <> - required args
-            <<>> - optional args
-            [] - insert a value
+         - <> = required args
+         - <<>> = optional args
+         - [] = insert a value
 
         By BWP09#5091
         Github: https://github.com/BWP09/Hes_a_BOT
 
         planned features:
-            hesa political
-            hesa face reveal
-            Hesa braindead
+         - hesa political
+         - hesa face reveal
+         - hesa braindead
+         - hesa gay
+         - hesa hitlist
         """, color=COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
@@ -326,10 +328,10 @@ async def on_message(message):
                 await client.change_presence(activity = discord.Game(str(status_message)))
             else:
                 match args:
-                    case "online":  await client.change_presence(status=discord.Status.online)
-                    case "offline": await client.change_presence(status=discord.Status.invisible)
-                    case "idle":    await client.change_presence(status=discord.Status.idle)
-                    case "dnd":     await client.change_presence(status=discord.Status.dnd)
+                    case "online":  await client.change_presence(status = discord.Status.online)
+                    case "offline": await client.change_presence(status = discord.Status.invisible)
+                    case "idle":    await client.change_presence(status = discord.Status.idle)
+                    case "dnd":     await client.change_presence(status = discord.Status.dnd)
             await message.add_reaction("☑️")
         except Exception as e:
                 last_error_message = e
@@ -343,10 +345,12 @@ async def on_message(message):
             text = args.split(" / ")[1]
             amount = args.split(" / ")[0]
             print(f"{col.Fore.RED}[spam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
+            
             for _ in range(int(amount)):
                 spam_message += f"{text}\n"
             await message.channel.send(str(spam_message))
             await message.add_reaction("☑️")
+        
         except Exception as e:
             last_error_message = e
             if str(e).lower().count("4000 bad request") > 0:
@@ -403,16 +407,16 @@ async def on_message(message):
     elif user_message.lower().startswith(f"{PREFIX} role"):
         try:
             args = user_message.lower().split(" | ")[1]
-            args1 = args.split(" / ")[0]
-            args2 = args.split(" / ")[1]
-            if args1 == "add":
+            arg1 = args.split(" / ")[0]
+            arg2 = args.split(" / ")[1]
+            if arg1 == "add":
                 member = message.author
-                role = get(member.guild.roles, name=args2)
+                role = get(member.guild.roles, name = arg2)
                 await member.add_roles(role)
 
-            if args1 == "remove":
+            if arg1 == "remove":
                 member = message.author
-                role = get(member.guild.roles, name=args2)
+                role = get(member.guild.roles, name = arg2)
                 await member.remove_roles(role)
 
             await message.add_reaction("☑️")
@@ -423,7 +427,7 @@ async def on_message(message):
             await message.add_reaction("❌")
 
     elif user_message.lower().startswith(f"{PREFIX} k*dcounter"):
-        embed_var = discord.Embed(title="K*d counter", description=f"The k*d counter is at {kid_counter}", color=COLOR, reference = message)
+        embed_var = discord.Embed(title = "K*d counter", description = f"The k*d counter is at {kid_counter}", color = COLOR, reference = message)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
 
@@ -435,6 +439,64 @@ async def on_message(message):
     elif user_message.lower().startswith(f"{PREFIX} snipe"):
         await message.channel.send(f"[Last deleted message]: {snipe_message}")
         await message.add_reaction("☑️")
+    
+    elif user_message.lower().startswith(f"{PREFIX} vc"):
+        try:
+            args_main = user_message.lower().split(" | ")[1]
+            if args_main.startswith("play"):
+                if message.guild.voice_client:
+                    args = args_main.split(" / ")[1]
+                    vc = message.guild.voice_client
+                    vc.play(discord.FFmpegPCMAudio(executable = "C:/Program Files (extracted)/ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe", source = "C:/Users/BWP09/Desktop/Misc/Code/Python/Discord/Bots/Hes_a_BOT_v1/data/vc_files/" + str(args)))
+                    await message.add_reaction("☑️")
+
+                else:
+                    await message.channel.send("Im not connected to a VC")
+                    raise Exception("Not connected to voice channel")
+
+            if args_main.startswith("stop"):
+                if message.guild.voice_client:
+                    vc = message.guild.voice_client
+                    vc.stop()
+                    await message.add_reaction("☑️")
+
+                else:
+                    await message.channel.send("Im not connected to a VC")
+                    raise Exception("Not connected to voice channel")
+            
+            if args_main.startswith("pause"):
+                vc = message.guild.voice_client
+                if vc.is_playing():
+                    vc.pause()
+                    await message.add_reaction("☑️")
+
+                else:
+                    await message.channel.send("Im not playing anything")
+                    raise Exception("Not connected to voice channel")
+
+            if args_main.startswith("resume"):
+                vc = message.guild.voice_client
+                if vc.is_paused:
+                    vc.resume()
+                    await message.add_reaction("☑️")
+
+                else:
+                    await message.channel.send("Im not playing anything")
+                    raise Exception("Not connected to voice channel")
+        
+            if args_main.startswith("list"):
+                names = "Files:\n"
+                files = os.listdir("data/vc_files/")
+                for file in files:
+                    names += file + "\n"
+                await message.channel.send(names, reference = message)
+                await message.add_reaction("☑️")
+
+        except Exception as e:
+            last_error_message = e
+            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.add_reaction("❌")
+    
 
     elif server_id in bl_response_server: return
     elif channel_id in bl_response_channel: return
