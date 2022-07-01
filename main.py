@@ -5,6 +5,9 @@ from discord.utils import get
 #= By Brandon Payne or BWP09 =#
 #= Github repo for this (terrible) project: https://github.com/BWP09/Hes_a_BOT =#
 
+## PLANS ##
+# 1. Add a queue for playing files
+
 def update_yaml(yaml_file, key, value):
     with open(yaml_file, "r") as f:
         data = yaml.safe_load(f)
@@ -271,16 +274,31 @@ async def on_message(message):
         `{PREFIX} help` - shows this message
         `{PREFIX} stop` - stops He's a BOT
         `{PREFIX} test` - sends a message to test the bot
-        `{PREFIX} <"join", "leave"> <<| "channel: [voice channel ID]">>` - joins or leaves the voice channel
-        `{PREFIX} id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
-        `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text]">` - changes the bot's status
-        `{PREFIX} spam | <amount> / <text>` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
-        `{PREFIX} megaspam | <amount> / <text>` - spams a message to the channel (many smaller messages, amount of messages cannot be more than 50)
-        `{PREFIX} role | <"add", "remove"> / [role name]` - add or remove a role from yourself
         `{PREFIX} k*dcounter` - display the k*d counter
         `{PREFIX} last_error` - shows the technical last error message
         `{PREFIX} snipe` - shows the last deleted message
-        `{PREFIX} blacklist | <"add", "remove"> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
+
+        `{PREFIX} <join, leave> <<| "channel: [voice channel ID]">>` - joins or leaves the voice channel
+
+        `{PREFIX} id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
+
+        `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text]">` - changes the bot's status
+
+        `{PREFIX} spam | [amount] / [text]` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
+        
+        `{PREFIX} megaspam | [amount] / [text]` - spams a message to the channel (many smaller messages, amount of messages cannot be more than 50)
+        
+        `{PREFIX} role | <add, remove> / [role name]` - add or remove a role from yourself
+        
+        `{PREFIX} blacklist | <add, remove> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
+        
+        `{PREFIX} vc | 
+ - <play / [file name]> - play the specified file in the connected voice channel
+ - <pause> - pauses the currently playing audio
+ - <resume> - resumes the paused audio
+ - <stop> - stops the currently playing audio
+ - <list> - lists all playable files`
+        
         v{VERSION}
         
         Key:
@@ -511,7 +529,7 @@ async def on_message(message):
         await message.channel.send("is HOT AF")
 
     elif user_message.lower().count("jack") > 0:
-        await message.channel.send("did someone say jack....\n", file=discord.File("data/jackhigh.png"), reference = message)
+        await message.channel.send("did someone say jack....\n", file = discord.File("data/jackhigh.png"), reference = message)
 
     elif user_message.lower() == "rene":
         await message.channel.send("UwU")
