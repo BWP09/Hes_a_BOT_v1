@@ -6,3 +6,4 @@ bot:
   color: 0x009f9f
   version: B.1.0.0..1.7.22
   playing_status: 'Prefix: hesa, type hesa help'
+  megaspam_max: 30

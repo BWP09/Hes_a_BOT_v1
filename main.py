@@ -7,6 +7,7 @@ from discord.utils import get
 
 ## PLANS ##
 # 1. Add a queue for playing files
+# 2. Add blacklisting for roles
 
 def update_yaml(yaml_file, key, value):
     with open(yaml_file, "r") as f:
@@ -36,7 +37,7 @@ def update_blacklist():
         blacklist_UPDATED = yaml.safe_load(file)
 
 def update_config():
-    global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR
+    global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, MEGASPAM_MAX
     global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter, last_error_message_YAML
 
     with open("data/config/config.yml", "r") as file:
@@ -59,6 +60,7 @@ def update_config():
     PLAYING_STATUS = config["bot"]["playing_status"]
     VERSION = config["bot"]["version"]
     COLOR = config["bot"]["color"]
+    MEGASPAM_MAX = int(config["bot"]["megaspam_max"])
 
     bl_server = blacklist["server"]
     bl_channel = blacklist["channel"]
@@ -287,7 +289,7 @@ async def on_message(message):
 
         `{PREFIX} spam | [amount] / [text]` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
         
-        `{PREFIX} megaspam | [amount] / [text]` - spams many messages to the channel, amount of messages cannot be more than 50
+        `{PREFIX} megaspam | [amount] / [text]` - spams many messages to the channel, amount of messages cannot be more than {MEGASPAM_MAX}
         
         `{PREFIX} blacklist | <add, remove> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
         
@@ -399,8 +401,8 @@ async def on_message(message):
             args = user_message.lower().split(" | ")[1]
             text = args.split(" / ")[1]
             amount = args.split(" / ")[0]
-            if int(amount) > 50:
-                await message.channel.send(error_handler("Amount of messages is too high, the max is 50 messages", str(e)), reference = message)
+            if int(amount) > MEGASPAM_MAX:
+                await message.channel.send(error_handler(f"Amount of messages is too high, the max is {MEGASPAM_MAX} messages", "[megaspam] Amount of messages is too high"), reference = message)
                 await message.add_reaction("❌")
             else:
                 print(f"{col.Fore.RED}[megaspam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")

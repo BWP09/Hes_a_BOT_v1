@@ -1,6 +1,7 @@
 data/logs/
 data.yml
 token.yml
+blacklist.yml
 test.py
 .vscode/*
 !.vscode/settings.json
@@ -14,3 +15,4 @@ test.py
 
 # Built Visual Studio Code Extensions
 *.vsix
+.gitignore
