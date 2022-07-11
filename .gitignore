@@ -1,4 +1,5 @@
 data/logs/
+data.yml
 token.yml
 test.py
 .vscode/*

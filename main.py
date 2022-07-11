@@ -1,4 +1,4 @@
-import discord, yaml, datetime, os, atexit, asyncio, random
+import discord, yaml, datetime, os, atexit, asyncio, random, aconsole
 import colorama as col
 from discord.utils import get
 
@@ -87,6 +87,7 @@ def file_write(file_name, text):
         file.seek(0)
         file.truncate()
         file.write(text)
+
 def file_read(file_name):
     with open(file_name, "r", encoding = "utf-8") as file:
         return file.read()
@@ -162,7 +163,7 @@ async def on_message(message):
     try: server_id = int(message.guild.id)
     except: server_id = 0
 
-    await client.change_presence(activity = discord.Game(PLAYING_STATUS))
+    #await client.change_presence(activity = discord.Game(PLAYING_STATUS))
 
     log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
     print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
@@ -282,13 +283,11 @@ async def on_message(message):
 
         `{PREFIX} id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
 
-        `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text]">` - changes the bot's status
+        `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text] / [status_type]">` - changes the bot's status
 
         `{PREFIX} spam | [amount] / [text]` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
         
-        `{PREFIX} megaspam | [amount] / [text]` - spams a message to the channel (many smaller messages, amount of messages cannot be more than 50)
-        
-        `{PREFIX} role | <add, remove> / [role name]` - add or remove a role from yourself
+        `{PREFIX} megaspam | [amount] / [text]` - spams many messages to the channel, amount of messages cannot be more than 50
         
         `{PREFIX} blacklist | <add, remove> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
         
@@ -319,6 +318,16 @@ async def on_message(message):
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
 
+    elif user_message.lower().startswith(f"{PREFIX} *help*"):
+        embed_var = discord.Embed(title = "*Help* Command", description = f"""
+        `d!<[message_ID]>`
+
+        `{PREFIX} role | <add, remove> / [role name]` - add or remove a role from yourself
+        
+        """, color=COLOR)
+        await message.channel.send(embed = embed_var, reference = message)
+        await message.add_reaction("☑️")
+
     elif user_message.lower().startswith(f"{PREFIX} test"):
         await message.channel.send(f"Running v{VERSION}", reference = message)
         await message.add_reaction("☑️")
@@ -340,10 +349,18 @@ async def on_message(message):
 
     elif user_message.lower().startswith(f"{PREFIX} status"):
         try:
-            args = user_message.lower().split(" | ")[1]
+            args = user_message.split(" | ")[1]
             if args.startswith("msg:"):
-                status_message = args.split("msg: ")[1]
-                await client.change_presence(activity = discord.Game(str(status_message)))
+                msg_args = args.split("msg: ")[1]
+                status_message = msg_args.split(" / ")[0]
+                status_activity = msg_args.lower().split(" / ")[1]
+                
+                match status_activity:
+                    case "online":  await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.online)
+                    case "offline": await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.invisible)
+                    case "idle":    await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.idle)
+                    case "dnd":     await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.dnd)
+                
             else:
                 match args:
                     case "online":  await client.change_presence(status = discord.Status.online)
@@ -554,7 +571,7 @@ async def on_message(message):
     elif user_message.lower() == "yeah":
         await message.channel.send("yeah")
     
-    elif user_message.lower() == "ok":
+    elif user_message.lower() == "ok" or user_message.lower() == "okay":
         await message.channel.send("ok then bud")
     
     elif user_message.lower() == "oh":
