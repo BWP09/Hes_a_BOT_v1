@@ -390,8 +390,8 @@ async def on_message(message):
         
         except Exception as e:
             last_error_message = e
-            if str(e).lower().count("4000 bad request") > 0:
-                await message.channel.send(error_handler("Amount of messages is too high, the amount of characters times the number of messages cannot be more than 4000", str(e)), reference = message)
+            if str(e).lower().count("400 bad request") > 0:
+                await message.channel.send(error_handler("**Amount of messages is too high, the amount of characters times the number of messages cannot be more than 4000**\n", str(e)), reference = message)
             else:
                 await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
@@ -402,7 +402,7 @@ async def on_message(message):
             text = args.split(" / ")[1]
             amount = args.split(" / ")[0]
             if int(amount) > MEGASPAM_MAX:
-                await message.channel.send(error_handler(f"Amount of messages is too high, the max is {MEGASPAM_MAX} messages", "[megaspam] Amount of messages is too high"), reference = message)
+                await message.channel.send(error_handler(f"**Amount of messages is too high, the max is {MEGASPAM_MAX} messages**\n", "[megaspam] Amount of messages is too high"), reference = message)
                 await message.add_reaction("❌")
             else:
                 print(f"{col.Fore.RED}[megaspam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
