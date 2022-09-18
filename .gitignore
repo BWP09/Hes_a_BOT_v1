@@ -1,4 +1,5 @@
 data/logs/
+data/vc_files/
 data.yml
 token.yml
 blacklist.yml

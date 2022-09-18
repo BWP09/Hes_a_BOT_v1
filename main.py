@@ -84,6 +84,10 @@ def log(file_name, text):
         file.write(f"{text}\n")
 
 """
+def file_append(file_name, text):
+    with open(file_name, "a", encoding = "utf-8") as file:
+        file.write(text)
+
 def file_write(file_name, text):
     with open(file_name, "r+", encoding = "utf-8") as file:
         file.seek(0)
@@ -99,11 +103,11 @@ def error_handler(text, error):
     update_yaml("data/config/data.yml", "last_error_message", str(last_error_message))
     update_config()
     print(f"{col.Fore.YELLOW}>[Error Handler]: {error}")
-    return f"[Error Handler]: {text}\n(try `{PREFIX} help`)\n::{last_error_message_YAML}"
+    return f"[Error Handler]: {text}\n(try `{PREFIX} help`)\n```{last_error_message_YAML}```"
 
 def exit_handler():
     print(f"{col.Fore.YELLOW}>[Exit Handler]: Closing bot.")
-    log(f"LOG-{get_date_time(1)}", f"[Exit Handler]: Closing bot.")
+    log(f"LOG-{get_date_time(1)}", f">[Exit Handler]: Closing bot.")
     print(f"{col.Style.RESET_ALL}Closed")
 
 update_config()
@@ -145,8 +149,9 @@ async def on_message_delete(message):
     channel = str(message.channel)
     server = str(message.guild)
 
-    update_yaml("data/config/data.yml", "snipe_message", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}\n")
-    log(f"LOG-{get_date_time(1)}", f"[MESSAGE DELETE]: [{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}\n")
+    update_yaml("data/config/data.yml", "snipe_message", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
+    log(f"LOG-{get_date_time(1)}", f"[MESSAGE DELETE]: [{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
+    log(f"SNIPE-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
     print(f"{col.Fore.RED}[MESSAGE DELETE]: {col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}\033[4m{user_message}\033[0m")
 
 @client.event
@@ -164,6 +169,9 @@ async def on_message(message):
     server = str(message.guild)
     try: server_id = int(message.guild.id)
     except: server_id = 0
+
+    try: url = message.attachments[0].url
+    except: url = 0
 
     #await client.change_presence(activity = discord.Game(PLAYING_STATUS))
 
@@ -316,6 +324,7 @@ async def on_message(message):
          - hesa braindead
          - hesa gay
          - hesa hitlist
+         - If you are mean to hesa he will cry
         """, color=COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
@@ -378,7 +387,7 @@ async def on_message(message):
     elif user_message.lower().startswith(f"{PREFIX} spam"):
         try:
             spam_message = ""
-            args = user_message.lower().split(" | ")[1]
+            args = user_message.split(" | ")[1]
             text = args.split(" / ")[1]
             amount = args.split(" / ")[0]
             print(f"{col.Fore.RED}[spam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
@@ -398,7 +407,7 @@ async def on_message(message):
 
     elif user_message.lower().startswith(f"{PREFIX} megaspam"):
         try:
-            args = user_message.lower().split(" | ")[1]
+            args = user_message.split(" | ")[1]
             text = args.split(" / ")[1]
             amount = args.split(" / ")[0]
             if int(amount) > MEGASPAM_MAX:
@@ -534,6 +543,9 @@ async def on_message(message):
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
     
+    # elif user_message.lower().startswith(f"{PREFIX} send"):
+    #     try:
+            
 
     elif server_id in bl_response_server: return
     elif channel_id in bl_response_channel: return
@@ -562,7 +574,7 @@ async def on_message(message):
         await message.channel.send("hehe")
     
     elif user_message.lower().count("hassan") > 0:
-        await message.channel.send("kidnapped your family + L + ratio + bozo\nhttps://cdn.discordapp.com/attachments/942661940554117122/966856943698313286/IMG_0306.jpg")
+        await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File("data/hassan_bozo.jpg"))
 
     elif user_message.lower() == "kellog":
         await message.channel.send("is it super kellog krazy time?")
@@ -596,7 +608,7 @@ async def on_message(message):
         await message.author.send("you are now DM-ed!")
     
     elif user_message.lower().count("dumb") > 0:
-        await message.channel.send("your dumb")
+        await message.channel.send("you're dumb")
 
     elif user_message.lower().count("half life 3") > 0:
         await message.channel.send("if only..... :disappointed_relieved:")
@@ -614,6 +626,12 @@ async def on_message(message):
         await message.channel.send("i dont shut up, i grow up, and when i look at you i throw up", reference = message)
 
     elif user_message.lower().count("jesus") > 0: return
+
+    # elif user_message.lower().count("poop") > 0:
+        # await message.channel.send("Hehe poopoo peepee so funny hehe")
+    
+    elif user_message.lower().count("gay") > 0:
+        await message.channel.send("Rodrigo is so gay lol its true. One time he dm'ed hesa and said: \"I am so gay\" Its true")
     
     elif user_message.lower().count("sus") > 0 and user_message.lower().count("jesus") == 0:
         rand_int = random.randint(0, 1)
@@ -646,7 +664,7 @@ async def on_message(message):
             case 0: await message.channel.send("omg so lol", reference = message)
             case 1: await message.channel.send("lol", reference = message)
     
-    elif user_message.lower().count("amogus" or "among us") > 0:
+    elif user_message.lower().count("amogus") > 0:
         rand_int = random.randint(0, 2)
         match rand_int:
             case 0: await message.channel.send("sus")
