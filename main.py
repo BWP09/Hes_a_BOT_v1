@@ -1,4 +1,4 @@
-import discord, yaml, datetime, os, atexit, asyncio, random, aconsole
+import discord, yaml, datetime, os, atexit, asyncio, random
 import colorama as col
 from discord.utils import get
 
