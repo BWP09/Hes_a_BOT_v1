@@ -175,8 +175,6 @@ async def on_message(message):
     try: url = message.attachments[0].url
     except: url = 0
 
-    #await client.change_presence(activity = discord.Game(PLAYING_STATUS))
-
     log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
     print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
 
@@ -191,8 +189,6 @@ async def on_message(message):
                 if arg2.startswith("user:"):
                     bl_user_id = int(arg2.split("user: ")[1])
                     append_yaml("data/config/blacklist.yml", "user", bl_user_id)
-                
-                # elif arg2.startswith("role:"): pass
                 
                 elif arg2.startswith("server:"):
                     bl_server_id = int(arg2.split("server: ")[1])
@@ -219,8 +215,6 @@ async def on_message(message):
                     update_blacklist()
                     if blacklist_UPDATED["user"] == None:
                         update_yaml("data/config/blacklist.yml", "user", [""])
-                
-                # elif arg2.startswith("role:"): pass
                 
                 elif arg2.startswith("server:"):
                     bl_server_id = int(arg2.split("server: ")[1])
@@ -545,9 +539,7 @@ async def on_message(message):
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
     
-    # elif user_message.lower().startswith(f"{PREFIX} send"):
-    #     try:
-            
+
 
     elif server_id in bl_response_server: return
     elif channel_id in bl_response_channel: return
@@ -564,22 +556,11 @@ async def on_message(message):
     elif user_message.lower().count("jack") > 0:
         await message.channel.send("did someone say jack....\n", file = discord.File("data/jackhigh.png"), reference = message)
 
-    elif user_message.lower() == "rene":
-        await message.channel.send("UwU")
-
-    elif user_message.lower() == "cody":
-        await message.channel.send(". . .")
-        asyncio.sleep(1)
-        await message.channel.send("lol jk")
-
     elif user_message.lower() == "keegan":
         await message.channel.send("hehe")
     
     elif user_message.lower().count("hassan") > 0:
         await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File("data/hassan_bozo.jpg"))
-
-    elif user_message.lower() == "kellog":
-        await message.channel.send("is it super kellog krazy time?")
     
     elif user_message.lower() == "brandon":
         await message.channel.send("SOURCE ENGINE")
@@ -627,13 +608,11 @@ async def on_message(message):
     elif user_message.lower().count("shut up") > 0:
         await message.channel.send("i dont shut up, i grow up, and when i look at you i throw up", reference = message)
 
-    elif user_message.lower().count("jesus") > 0: return
-
-    # elif user_message.lower().count("poop") > 0:
-        # await message.channel.send("Hehe poopoo peepee so funny hehe")
     
     elif user_message.lower().count("gay") > 0:
         await message.channel.send("Rodrigo is so gay lol its true. One time he dm'ed hesa and said: \"I am so gay\" Its true")
+    
+    elif user_message.lower().count("jesus") > 0: return
     
     elif user_message.lower().count("sus") > 0 and user_message.lower().count("jesus") == 0:
         rand_int = random.randint(0, 1)
@@ -677,14 +656,8 @@ async def on_message(message):
 
     elif user_message.lower().count("bot ") > 0:
         await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)
-
-    elif user_message.lower().count("b0t ") > 0:
-        await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)
     
     elif user_message.lower().endswith("bot"):
-        await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)
-
-    elif user_message.lower().endswith("b0t"):
         await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)
 
 client.run(TOKEN)
