@@ -5,8 +5,6 @@ from discord.utils import get
 #= By Brandon Payne or BWP09 =#
 #= Github repo for this (terrible) project: https://github.com/BWP09/Hes_a_BOT =#
 
-#= Test =#
-
 ## PLANS ##
 # 1. Add a queue for playing files
 # 2. Add blacklisting for roles
