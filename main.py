@@ -37,22 +37,23 @@ def update_blacklist():
         blacklist_UPDATED = yaml.safe_load(file)
 
 def update_config():
-    global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, MEGASPAM_MAX
+    global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, BOT_ID, MEGASPAM_MAX, PURGE_MAX
     global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter, last_error_message_YAML
 
     with open("data/config/config.yml", "r") as file:
         config = yaml.safe_load(file)
-    
+
     with open("data/config/token.yml", "r") as file:
         token = yaml.safe_load(file)
-    
+
     with open("data/config/data.yml", "r") as file:
         data = yaml.safe_load(file)
-    
+
     with open("data/config/blacklist.yml", "r") as file:
         blacklist = yaml.safe_load(file)
 
     TOKEN = token["token"]
+    BOT_ID = config["bot"]["id"]
     PREFIX = config["bot"]["prefix"]
     ADMIN_NAME = config["bot"]["admin"]["admin_name"]
     ADMIN_ID = config["bot"]["admin"]["admin_id"]
@@ -61,6 +62,7 @@ def update_config():
     VERSION = config["bot"]["version"]
     COLOR = config["bot"]["color"]
     MEGASPAM_MAX = int(config["bot"]["megaspam_max"])
+    PURGE_MAX = int(config["bot"]["purge_max"])
 
     bl_server = blacklist["server"]
     bl_channel = blacklist["channel"]
@@ -83,7 +85,6 @@ def log(file_name, text):
     with open(f"data/logs/{file_name}.log", "a", encoding = "utf-8") as file:
         file.write(f"{text}\n")
 
-"""
 def file_append(file_name, text):
     with open(file_name, "a", encoding = "utf-8") as file:
         file.write(text)
@@ -97,7 +98,6 @@ def file_write(file_name, text):
 def file_read(file_name):
     with open(file_name, "r", encoding = "utf-8") as file:
         return file.read()
-"""
 
 def error_handler(text, error):
     update_yaml("data/config/data.yml", "last_error_message", str(last_error_message))
@@ -109,6 +109,9 @@ def exit_handler():
     print(f"{col.Fore.YELLOW}>[Exit Handler]: Closing bot.")
     log(f"LOG-{get_date_time(1)}", f">[Exit Handler]: Closing bot.")
     print(f"{col.Style.RESET_ALL}Closed")
+
+def syntax_embed(command_name):
+    return discord.Embed(title = f"Syntax Help: {command_name}", description = file_read(f"data/config/syntax_help/{command_name}.txt"), color=COLOR)
 
 update_config()
 atexit.register(exit_handler)
@@ -128,7 +131,7 @@ async def on_ready():
 @client.event
 async def on_message_edit(before, after):
     update_config()
-    
+
     before_message = str(before.content)
     after_message = str(after.content)
 
@@ -142,7 +145,7 @@ async def on_message_edit(before, after):
 @client.event
 async def on_message_delete(message):
     update_config()
-    
+
     user_message = str(message.content)
 
     username = str(message.author).split("#")[0]
@@ -170,16 +173,16 @@ async def on_message(message):
     try: server_id = int(message.guild.id)
     except: server_id = 0
 
-    try: url = message.attachments[0].url
-    except: url = 0
+    # try: url = message.attachments[0].url
+    # except: url = 0
 
     log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
     print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
 
-    if author_id == 947343189352796220: return
+    if author_id == BOT_ID: return
 
     elif user_message.lower().startswith(f"{PREFIX} blacklist"):
-        try:           
+        try:
             args = user_message.lower().split(" | ")[1]
             arg1 = args.split(" / ")[0]
             arg2 = args.split(" / ")[1]
@@ -241,31 +244,59 @@ async def on_message(message):
                     update_blacklist()
                     if blacklist_UPDATED["response_channel"] == None:
                         update_yaml("data/config/blacklist.yml", "response_channel", [""])
-                    
+
                 await message.add_reaction("☑️")
-        
+
         except Exception as e:
             last_error_message = e
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
 
-    
+
     elif server_id in bl_server: return
     elif channel_id in bl_channel: return
     elif author_id in bl_user: return
 
+
     elif user_message.lower().count("(!)") > 0: return
 
+
     elif user_message.lower().startswith("d!<"):
-        args = user_message.lower().split("<")[1].split(">")[0]
-        await client.http.delete_message(channel_id, args)
+        message_id = user_message.lower().removeprefix("d!<").removesuffix(">")
+        delete_message = await message.channel.fetch_message(message_id)
+        await delete_message.delete()
+
+
+    elif user_message.lower().startswith(f"{PREFIX} purge"):
+        try:
+            amount = int(user_message.lower().split(" | ")[1])
+
+            if amount > PURGE_MAX:
+                await message.channel.send(error_handler(f"**Amount of messages is too high, the max is {PURGE_MAX} messages**", "[purge] Amount of messages is too high"), reference = message)
+                await message.add_reaction("❌")
+
+            else:
+                print(f"{col.Fore.RED}[purge] {col.Style.RESET_ALL}purging {amount} messages")
+                await message.add_reaction("☑️")
+                await asyncio.sleep(1)
+
+                async for delete_message in message.channel.history(limit = amount + 1):
+                    await delete_message.delete()
+
+                await message.channel.send(f"Purge Complete :smiling_imp:\nDeleted {amount} messages")
+
+        except Exception as e:
+            last_error_message = e
+            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.add_reaction("❌")
+
 
     elif user_message.lower().startswith(f"{PREFIX} stop"):
         if author_id == ADMIN_ID:
-            try: 
+            try:
                 if message.guild.voice_client: await message.guild.voice_client.disconnect()
             except: pass
-            
+
             await client.change_presence(activity = discord.Game("I am offline"))
             await message.add_reaction("☑️")
             print(f"{col.Style.RESET_ALL}Stopped")
@@ -274,68 +305,53 @@ async def on_message(message):
             await message.channel.send("hehe no no!")
             await message.add_reaction("❌")
 
+
     elif user_message.lower().startswith(f"{PREFIX} help"):
-        embed_var = discord.Embed(title = "Help Command", description = f"""
-        `{PREFIX} help` - shows this message
-        `{PREFIX} stop` - stops He's a BOT
-        `{PREFIX} test` - sends a message to test the bot
-        `{PREFIX} k*dcounter` - display the k*d counter
-        `{PREFIX} last_error` - shows the technical last error message
-        `{PREFIX} snipe` - shows the last deleted message
-
-        `{PREFIX} <join, leave> <<| "channel: [voice channel ID]">>` - joins or leaves the voice channel
-
-        `{PREFIX} id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
-
-        `{PREFIX} status | <"online", "idle", "dnd", "offline", "msg: [text] / [status_type]">` - changes the bot's status
-
-        `{PREFIX} spam | [amount] / [text]` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
-        
-        `{PREFIX} megaspam | [amount] / [text]` - spams many messages to the channel, amount of messages cannot be more than {MEGASPAM_MAX}
-        
-        `{PREFIX} blacklist | <add, remove> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
-        
-        `{PREFIX} vc | 
- - <play / [file name]> - play the specified file in the connected voice channel
- - <pause> - pauses the currently playing audio
- - <resume> - resumes the paused audio
- - <stop> - stops the currently playing audio
- - <list> - lists all playable files`
-        
-        v{VERSION}
-        
-        Key:
-         - <> = required args
-         - <<>> = optional args
-         - [] = insert a value
-
-        By BWP09#5091
-        Github: https://github.com/BWP09/Hes_a_BOT
-
-        planned features:
-         - hesa political
-         - hesa face reveal
-         - hesa braindead
-         - hesa gay
-         - hesa hitlist
-         - If you are mean to hesa he will cry
-        """, color=COLOR)
+        embed_var = discord.Embed(title = "Help Command", description = file_read("data/config/help_file.txt"), color = COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
+
 
     elif user_message.lower().startswith(f"{PREFIX} *help*"):
-        embed_var = discord.Embed(title = "*Help* Command", description = f"""
-        `d!<[message_ID]>`
-
-        `{PREFIX} role | <add, remove> / [role name]` - add or remove a role from yourself
-        
-        """, color=COLOR)
+        embed_var = discord.Embed(title = "*Help* Command", description = file_read("data/config/help_file_secrete.txt"), color = COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
+
+
+    elif user_message.lower().startswith(f"{PREFIX} syntax"):
+        try:
+            command_name = user_message.lower().split(" | ")[1]
+            description_embed = ""
+
+            match command_name:
+                case "blacklist": description_embed = syntax_embed(command_name)
+                case "help": description_embed = syntax_embed(command_name)
+                case "id": description_embed = syntax_embed(command_name)
+                case "join": description_embed = syntax_embed(command_name)
+                case "leave": description_embed = syntax_embed(command_name)
+                case "megaspam": description_embed = syntax_embed(command_name)
+                case "purge": description_embed = syntax_embed(command_name)
+                case "role": description_embed = syntax_embed(command_name)
+                case "snipe": description_embed = syntax_embed(command_name)
+                case "spam": description_embed = syntax_embed(command_name)
+                case "status": description_embed = syntax_embed(command_name)
+                case "stop": description_embed = syntax_embed(command_name)
+                case "syntax": description_embed = syntax_embed(command_name)
+                case "test": description_embed = syntax_embed(command_name)
+                case "vc": description_embed = syntax_embed(command_name)
+
+            await message.channel.send(embed = description_embed, reference = message)
+
+        except Exception as e:
+            last_error_message = e
+            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.add_reaction("❌")
+
 
     elif user_message.lower().startswith(f"{PREFIX} test"):
         await message.channel.send(f"Running v{VERSION}", reference = message)
         await message.add_reaction("☑️")
+
 
     elif user_message.lower().startswith(f"{PREFIX} id"):
         try:
@@ -343,29 +359,31 @@ async def on_message(message):
             if args == "server": await message.channel.send(f"Current server's ID: {server_id}", reference = message)
             if args == "channel": await message.channel.send(f"Current channel's ID: {channel_id}", reference = message)
             if args.startswith("user: "): 
-                user_id = args.split("@")[1]
-                user_id = user_id.split(">")[0]
+                user_id = args.split("@")[1].removesuffix(">")
                 await message.channel.send(f"User's ID: {user_id}", reference = message)
-            await message.add_reaction("☑️")
-        except Exception as e:
-                last_error_message = e
-                await message.channel.send(error_handler("Syntax", str(e)), reference = message)
-                await message.add_reaction("❌")
 
-    elif user_message.lower().startswith(f"{PREFIX} status"):
+            await message.add_reaction("☑️")
+
+        except Exception as e:
+            last_error_message = e
+            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.add_reaction("❌")
+
+
+    elif user_message.lower().startswith(f"{PREFIX} status"): # REFACTOR THIS JUST LIKE HOW THE SYNTAX CMD WORKS
         try:
             args = user_message.split(" | ")[1]
             if args.startswith("msg:"):
                 msg_args = args.split("msg: ")[1]
                 status_message = msg_args.split(" / ")[0]
                 status_activity = msg_args.lower().split(" / ")[1]
-                
+
                 match status_activity:
                     case "online":  await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.online)
                     case "offline": await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.invisible)
                     case "idle":    await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.idle)
                     case "dnd":     await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.dnd)
-                
+
             else:
                 match args:
                     case "online":  await client.change_presence(status = discord.Status.online)
@@ -373,10 +391,12 @@ async def on_message(message):
                     case "idle":    await client.change_presence(status = discord.Status.idle)
                     case "dnd":     await client.change_presence(status = discord.Status.dnd)
             await message.add_reaction("☑️")
+
         except Exception as e:
-                last_error_message = e
-                await message.channel.send(error_handler("Syntax", str(e)), reference = message)
-                await message.add_reaction("❌")
+            last_error_message = e
+            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.add_reaction("❌")
+
 
     elif user_message.lower().startswith(f"{PREFIX} spam"):
         try:
@@ -385,12 +405,12 @@ async def on_message(message):
             text = args.split(" / ")[1]
             amount = args.split(" / ")[0]
             print(f"{col.Fore.RED}[spam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
-            
+
             for _ in range(int(amount)):
                 spam_message += f"{text}\n"
             await message.channel.send(str(spam_message))
             await message.add_reaction("☑️")
-        
+
         except Exception as e:
             last_error_message = e
             if str(e).lower().count("400 bad request") > 0:
@@ -399,44 +419,39 @@ async def on_message(message):
                 await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
 
+
     elif user_message.lower().startswith(f"{PREFIX} megaspam"):
         try:
             args = user_message.split(" | ")[1]
             text = args.split(" / ")[1]
-            amount = args.split(" / ")[0]
-            if int(amount) > MEGASPAM_MAX:
-                await message.channel.send(error_handler(f"**Amount of messages is too high, the max is {MEGASPAM_MAX} messages**\n", "[megaspam] Amount of messages is too high"), reference = message)
+            amount = int(args.split(" / ")[0])
+
+            if amount > MEGASPAM_MAX:
+                await message.channel.send(error_handler(f"**Amount of messages is too high, the max is {MEGASPAM_MAX} messages**", "[megaspam] Amount of messages is too high"), reference = message)
                 await message.add_reaction("❌")
+
             else:
                 print(f"{col.Fore.RED}[megaspam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
                 await message.add_reaction("☑️")
-                for i in range(int(amount)):
+
+                for i in range(amount):
                     print(f"{col.Fore.RED}[megaspam] {col.Style.RESET_ALL}on message: {i + 1} of {amount}")
-                    await message.channel.send(str(text))
+                    await message.channel.send(text)
+
         except Exception as e:
             last_error_message = e
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
 
+
     elif user_message.lower().startswith(f"{PREFIX} join"):
-        if user_message.lower().count(" | ") == 0:
-            if message.author.voice:
-                channel = message.author.voice.channel
-                await channel.connect()
-                await message.channel.send("sure")
-            else:
-                await message.channel.send("i dont wanna vc by myself")
+        if message.author.voice:
+            channel = message.author.voice.channel
+            await channel.connect()
+            await message.channel.send("sure")
         else:
-            if message.author.voice:
-                args = user_message.lower().split(" | ")[1]
-                if args.startswith("channel: "):
-                    vc_id = args.split("channel: ")[1]
-                    channel = client.get_channel(int(vc_id))
-                    await channel.connect()
-                    await message.channel.send("sure")
-                else:
-                    await message.channel.send("i dont wanna vc by myself")
-    
+            await message.channel.send("i dont wanna vc by myself")
+
     elif message.content.startswith(f"{PREFIX} leave"):
         if message.guild.voice_client:
             await message.guild.voice_client.disconnect()
@@ -466,20 +481,24 @@ async def on_message(message):
             await message.channel.send(error_handler("Role Error", str(e)), reference = message)
             await message.add_reaction("❌")
 
-    elif user_message.lower().startswith(f"{PREFIX} k*dcounter"):
-        embed_var = discord.Embed(title = "K*d counter", description = f"The k*d counter is at {kid_counter}", color = COLOR, reference = message)
-        await message.channel.send(embed = embed_var, reference = message)
-        await message.add_reaction("☑️")
 
-    elif user_message.lower().startswith(f"{PREFIX} last_error"):
-        update_config()
-        await message.channel.send(f"[Last recorded error message]: {last_error_message_YAML}")
-        await message.add_reaction("☑️")
+    # elif user_message.lower().startswith(f"{PREFIX} k*dcounter"):
+    #     embed_var = discord.Embed(title = "K*d counter", description = f"The k*d counter is at {kid_counter}", color = COLOR, reference = message)
+    #     await message.channel.send(embed = embed_var, reference = message)
+    #     await message.add_reaction("☑️")
+
+
+    # elif user_message.lower().startswith(f"{PREFIX} last_error"):
+    #     update_config()
+    #     await message.channel.send(f"[Last recorded error message]: {last_error_message_YAML}")
+    #     await message.add_reaction("☑️")
+
 
     elif user_message.lower().startswith(f"{PREFIX} snipe"):
         await message.channel.send(f"[Last deleted message]: {snipe_message}")
         await message.add_reaction("☑️")
-    
+
+
     elif user_message.lower().startswith(f"{PREFIX} vc"):
         try:
             args_main = user_message.lower().split(" | ")[1]
@@ -487,7 +506,7 @@ async def on_message(message):
                 if message.guild.voice_client:
                     args = args_main.split(" / ")[1]
                     vc = message.guild.voice_client
-                    vc.play(discord.FFmpegPCMAudio(executable = "C:/Program Files (extracted)/ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe", source = "C:/Users/BWP09/Desktop/Misc/Code/Python/Discord/Bots/Hes_a_BOT_v1/data/vc_files/" + str(args)))
+                    vc.play(discord.FFmpegPCMAudio(executable = "C:/Program Files (extracted)/ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe", source = "C:/Users/BWP09/Desktop/Misc/Code/Python/Discord/Bots/Hes_a_BOT_v1/data/vc_files/" + args))
                     await message.add_reaction("☑️")
 
                 else:
@@ -503,7 +522,7 @@ async def on_message(message):
                 else:
                     await message.channel.send("Im not connected to a VC")
                     raise Exception("Not connected to voice channel")
-            
+
             if args_main.startswith("pause"):
                 vc = message.guild.voice_client
                 if vc.is_playing():
@@ -523,7 +542,7 @@ async def on_message(message):
                 else:
                     await message.channel.send("Im not playing anything")
                     raise Exception("Not connected to voice channel")
-        
+
             if args_main.startswith("list"):
                 names = "Files:\n"
                 files = os.listdir("data/vc_files/")
@@ -536,32 +555,49 @@ async def on_message(message):
             last_error_message = e
             await message.channel.send(error_handler("Syntax", str(e)), reference = message)
             await message.add_reaction("❌")
-    
+
+
+    elif user_message.lower().startswith(f"{PREFIX} invite"):
+        try:
+            invite_link = await message.channel.create_invite()
+            await message.channel.send(invite_link, reference = message)
+            await message.add_reaction("☑️")
+
+        except Exception as e:
+            last_error_message = e
+            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.add_reaction("❌")
 
 
     elif server_id in bl_response_server: return
     elif channel_id in bl_response_channel: return
-    elif author_id == 947343189352796220: return
+    elif author_id == BOT_ID: return
 
 
-    elif user_message.lower().count("kid") > 0:
-        await message.channel.send("dont you mean \"k*d\"?", reference = message)
-        update_yaml("data/config/data.yml", "kid_counter", kid_counter + 1)
+    # elif user_message.lower().count("kid") > 0:
+    #     await message.channel.send("dont you mean \"k*d\"?", reference = message)
+    #     update_yaml("data/config/data.yml", "kid_counter", kid_counter + 1)
 
     elif user_message.lower() == "sammy":
         await message.channel.send("is HOT AF")
 
     elif user_message.lower().count("jack") > 0:
-        await message.channel.send("did someone say jack....\n", file = discord.File("data/jackhigh.png"), reference = message)
+        await message.channel.send("did someone say jack....\n", file = discord.File("data/images/jackhigh.png"), reference = message)
 
     elif user_message.lower() == "keegan":
         await message.channel.send("hehe")
     
     elif user_message.lower().count("hassan") > 0:
-        await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File("data/hassan_bozo.jpg"))
+        await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File("data/images/hassan_bozo.jpg"))
     
     elif user_message.lower() == "brandon":
         await message.channel.send("SOURCE ENGINE")
+
+    elif user_message.lower() == "rodrigo":
+        await message.channel.send("is gay", reference = message)
+    
+    elif user_message.lower().count("gay") > 0:
+        await message.channel.send("Rodrigo is so gay lol its true. One time he dm'ed hesa and said: \"I am so gay\"\nIts true")
 
     elif user_message.lower() == "yeah":
         await message.channel.send("yeah")
@@ -605,10 +641,6 @@ async def on_message(message):
 
     elif user_message.lower().count("shut up") > 0:
         await message.channel.send("i dont shut up, i grow up, and when i look at you i throw up", reference = message)
-
-    
-    elif user_message.lower().count("gay") > 0:
-        await message.channel.send("Rodrigo is so gay lol its true. One time he dm'ed hesa and said: \"I am so gay\" Its true")
     
     elif user_message.lower().count("jesus") > 0: return
     

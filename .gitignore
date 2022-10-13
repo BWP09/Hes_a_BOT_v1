@@ -1,9 +1,11 @@
 data/logs/
 data/vc_files/
+data/images/
 data.yml
 token.yml
 blacklist.yml
 test.py
+.vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

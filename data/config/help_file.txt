@@ -1,0 +1,38 @@
+`hesa help` - shows this message
+
+`hesa syntax | [command name]` - provides additional information about a command, and includes examples
+
+`hesa stop` - stops He's a BOT
+
+`hesa test` - sends a message to test the bot
+
+`hesa snipe` - shows the last deleted message
+
+`hesa <join, leave>` - joins or leaves the voice channel you are in
+
+`hesa id | <"server", "channel", "user: [mentioned user]">` - shows the ID of the specified object
+
+`hesa status | <"online", "idle", "dnd", "offline", "msg: [text] / [status_type]">` - changes the bot's status
+
+`hesa spam | [amount] / [text]` - "spams" a message to the channel (one big message, amount of chars in message times amount of messages cannot be more than 4000)
+
+`hesa megaspam | [amount] / [text]` - spams many messages to the channel, amount of messages cannot be more than 30
+
+`hesa blacklist | <add, remove> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">` - adds the specified object to the blacklist
+
+`hesa vc | `
+ - `<play / [file name]>` - play the specified file in the connected voice channel
+ - `<pause>` - pauses the currently playing audio
+ - `<resume>` - resumes the paused audio
+ - `<stop>` - stops the currently playing audio
+ - `<list>` - lists all playable files
+
+Key:
+ - <> = required args
+ - <<>> = optional args
+ - [] = insert a value
+
+vR.1.0.3..12.10.22
+
+By BWP09#5091
+Github: https://github.com/BWP09/Hes_a_BOT

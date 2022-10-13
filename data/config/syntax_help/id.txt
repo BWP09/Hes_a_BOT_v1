@@ -1,0 +1,8 @@
+When you run this command, Hesa will send the Discord ID for whatever object you put in.
+
+*Usage:*
+`hesa id | <"server", "channel", "user: [mentioned user]">`
+
+*Examples:*
+`hesa id | server` will send the ID of the current server you are in
+`hesa id | user: @BWP09` will send the ID of my Discord account (if im in your server)

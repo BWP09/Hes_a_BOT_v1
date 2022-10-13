@@ -1,0 +1,8 @@
+This command deletes the however many messages specified.
+It will delete the message containing the command but it will not count that as one of the messages.
+
+*Usage:*
+`hesa purge | [amount]`
+
+*Examples:*
+`hesa purge | 10` will delete the last 10 messages

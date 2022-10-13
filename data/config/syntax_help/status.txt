@@ -1,0 +1,9 @@
+When you run this command Hesa will spam the text you put into the second argument of the command however many times you put in the first argument.
+The limit is 30 messages. He sends 5 messages every 5 seconds due to a limitation in Discord.
+
+*Usage:*
+`hesa status | <"online", "idle", "dnd", "offline", "msg: [text] / [status_type]">`
+
+*Examples:*
+`hesa status | dnd` will set Hesa's status to do not disturb, while playing nothing
+`hesa status | msg: Hello / idle` will set Hesa's status to "Hello", while being idle

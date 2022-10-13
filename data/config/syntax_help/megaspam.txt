@@ -1,0 +1,9 @@
+When you run this command Hesa will spam the text you put into the second argument of the command however many times you put in the first argument.
+The limit is 30 messages. He sends 5 messages every 5 seconds due to a limitation in Discord.
+
+*Usage:*
+`hesa megaspam | [amount] / [text]`
+
+*Examples:*
+`hesa megaspam | 10 / Hello` will spam "Hello", 10 times
+`hesa megaspam | 5 / JOIN` will spam "JOIN", 5 times

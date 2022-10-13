@@ -1,0 +1,7 @@
+This command will stop Hesa. Only the admin can do this
+
+*Usage:*
+`hesa stop`
+
+*Examples:*
+`hesa stop` will stop He's a BOT

@@ -1,0 +1,8 @@
+This command adds or removes an object from the blacklist. It could be a server, channel, or user.
+Using response_server or response_channel will allow commands to still work, but not the text responses.
+
+*Usage:*
+`hesa blacklist | <add, remove> / <"server: [server ID]", "channel: [channel ID]", "response_server: [server ID]", "response_channel: [channel ID]", "user: [user's ID]">`
+
+*Examples:*
+`hesa blacklist | add / response_channel: 1234567890` will stop Hesa from doing text responses in the specified channel

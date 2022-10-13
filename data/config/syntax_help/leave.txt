@@ -1,0 +1,7 @@
+This command will make Hesa leave the current voice channel he is in. Works even if you aren't in the VC.
+
+*Usage:*
+`hesa leave`
+
+*Examples:*
+`hesa leave` will make Hesa leave

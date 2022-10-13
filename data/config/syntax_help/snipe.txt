@@ -1,0 +1,7 @@
+Sends the last recorded deleted message
+
+*Usage:*
+`hesa snipe`
+
+*Examples:*
+`hesa snipe` will send the last deleted message

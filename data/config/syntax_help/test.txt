@@ -1,0 +1,5 @@
+Sends a test message back to the user, containing the bot's version.
+The first part of the version code (like R.0.0.0), contains whether the application is in Alpha (A), Beta (B), or Release (R).
+It also contains the update numbers. The first digit is for the largest changes, such re-writes. The second digit contains smaller features like new commands. The third digit has the least significance, and is for mostly just bug fixes.
+
+The second part of the code contains the date for when the update was released, in the format of day.month.year

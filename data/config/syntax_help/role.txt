@@ -1,0 +1,8 @@
+This command can give and remove roles from yourself.
+This can only give roles below and at what highest level role Hesa has.
+
+*Usage:*
+`hesa role | <add, remove> / [role name]`
+
+*Examples:*
+`hesa role | add / Admin` will give you the "Admin" role

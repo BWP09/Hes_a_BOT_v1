@@ -1,0 +1,8 @@
+Gives further explanation and examples for commands in the help command.
+
+*Usage:*
+`hesa syntax | [command name]`
+
+*Examples:*
+`hesa syntax | megaspam`
+`hesa syntax | blacklist`

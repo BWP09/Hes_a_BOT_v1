@@ -1,0 +1,8 @@
+When you run this command Hesa will send one large message containing the text you want "spammed" however many times you want.
+Due to Discord limitations the number of chars in you message multiplied by the amount of times it will be "spammed" can't exceed 4000.
+
+*Usage:*
+`hesa spam | [amount] / [text]`
+
+*Examples:*
+`hesa spam | 100 / Hello` will send one large message containing "Hello", 100 times

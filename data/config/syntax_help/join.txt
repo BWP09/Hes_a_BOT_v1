@@ -1,0 +1,7 @@
+This command will make Hesa join the current voice channel you are in. If you aren't in a voice channel the he won't join any.
+
+*Usage:*
+`hesa join`
+
+*Examples:*
+`hesa join` will make Hesa join

@@ -1,0 +1,9 @@
+This command will play the specified file in the connected voice channel. You can also pause, resume, and stop the playback.
+It can also list all available and playable files.
+
+*Usage:*
+`hesa vc | <"play" / [file name], "pause", "resume", "stop", "list">`
+
+*Examples:*
+`hesa vc | play / resmejett.webm` will play "resmejett.webm" in the connected VC
+`hesa vc | list` will send a list of playable files
