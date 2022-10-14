@@ -306,8 +306,7 @@ async def on_message(message):
 
             await client.change_presence(activity = discord.Game("I am offline"))
             await message.add_reaction("☑️")
-            print(f"{col.Style.RESET_ALL}Stopped")
-            await client.logout()
+            await client.close()
         else:
             await message.channel.send("hehe no no!")
             await message.add_reaction("❌")
