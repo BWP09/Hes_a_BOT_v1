@@ -419,7 +419,7 @@ async def on_message(message):
             amount = args.split(" / ")[0]
             print(f"{col.Fore.RED}[spam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
 
-            if (len(text) + 1) * int(amount) >= 4000:
+            if (len(text) + 1) * int(amount) >= 2000:
                 raise Exception("too many spam messages")
 
             for _ in range(int(amount)):
