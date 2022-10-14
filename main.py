@@ -1,3 +1,4 @@
+import trace
 import discord, yaml, datetime, os, atexit, asyncio, random
 import colorama as col
 from discord.utils import get
@@ -38,7 +39,7 @@ def update_blacklist():
 
 def update_config():
     global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, BOT_ID, MEGASPAM_MAX, PURGE_MAX
-    global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter, last_error_message_YAML
+    global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter
 
     with open("data/config/config.yml", "r") as file:
         config = yaml.safe_load(file)
@@ -72,7 +73,6 @@ def update_config():
 
     snipe_message = data["snipe_message"]
     kid_counter = data["kid_counter"]
-    last_error_message_YAML = data["last_error_message"]
 
 def get_date_time(type):
     match type:
@@ -99,11 +99,24 @@ def file_read(file_name):
     with open(file_name, "r", encoding = "utf-8") as file:
         return file.read()
 
-def error_handler(text, error):
-    update_yaml("data/config/data.yml", "last_error_message", str(last_error_message))
+def error_handler(error):
     update_config()
     print(f"{col.Fore.YELLOW}>[Error Handler]: {error}")
-    return f"[Error Handler]: {text}\n(try `{PREFIX} help`)\n```{last_error_message_YAML}```"
+
+    if error == "list index out of range": text = "Syntax error"
+    elif error.count("invalid literal for int() with base 10") > 0: text = "Syntax error"
+    elif error == "invalid command syntax": text = "Syntax error"
+    elif error == "too many megaspam messages": text = f"Amount of messages is too high, the max is {MEGASPAM_MAX} messages"
+    elif error == "too many spam messages": text = f"Amount of messages is too high, the amount of characters times the number of messages must be fewer than 2000"
+    elif error == "too many purge messages": text = f"Amount of messages is too high, the max is {PURGE_MAX} messages"
+    elif error == "Not connected to voice channel": text = "Not connected to voice channel"
+    elif error == "Audio not paused": text = "Audio Error"
+    elif error == "Audio not playing": text = "Audio Error"
+    elif error == "'NoneType' object has no attribute 'id'": text = "Role error"
+
+    else: text = "Unknown Error"
+
+    return f"[Error Handler]: **{text}**\n(try `{PREFIX} help`)\n```{error}```"
 
 def exit_handler():
     print(f"{col.Fore.YELLOW}>[Exit Handler]: Closing bot.")
@@ -117,8 +130,6 @@ update_config()
 atexit.register(exit_handler)
 client = discord.Client()
 os.system("color")
-
-last_error_message = ""
 
 @client.event
 async def on_ready():
@@ -160,7 +171,6 @@ async def on_message_delete(message):
 @client.event
 async def on_message(message):
     update_config()
-    global last_error_message
 
     user_message = str(message.content)
 
@@ -190,23 +200,23 @@ async def on_message(message):
                 if arg2.startswith("user:"):
                     bl_user_id = int(arg2.split("user: ")[1])
                     append_yaml("data/config/blacklist.yml", "user", bl_user_id)
-                
+
                 elif arg2.startswith("server:"):
                     bl_server_id = int(arg2.split("server: ")[1])
                     append_yaml("data/config/blacklist.yml", "server", bl_server_id)
-                
+
                 elif arg2.startswith("channel:"):
                     bl_channel_id = int(arg2.split("channel: ")[1])
                     append_yaml("data/config/blacklist.yml", "channel", bl_channel_id)
-                
+
                 elif arg2.startswith("response_server:"):
                     bl_response_server_id = int(arg2.split("response_server: ")[1])
                     append_yaml("data/config/blacklist.yml", "response_server", bl_response_server_id)
-                
+
                 elif arg2.startswith("response_channel:"):
                     bl_response_channel_id = int(arg2.split("response_channel: ")[1])
                     append_yaml("data/config/blacklist.yml", "response_channel", bl_response_channel_id)
-                
+
                 await message.add_reaction("☑️")
 
             if arg1 == "remove":
@@ -216,14 +226,14 @@ async def on_message(message):
                     update_blacklist()
                     if blacklist_UPDATED["user"] == None:
                         update_yaml("data/config/blacklist.yml", "user", [""])
-                
+
                 elif arg2.startswith("server:"):
                     bl_server_id = int(arg2.split("server: ")[1])
                     remove_yaml("data/config/blacklist.yml", "server", bl_server_id)
                     update_blacklist()
                     if blacklist_UPDATED["server"] == None:
                         update_yaml("data/config/blacklist.yml", "server", [""])
-                
+
                 elif arg2.startswith("channel:"):
                     bl_channel_id = int(arg2.split("channel: ")[1])
                     remove_yaml("data/config/blacklist.yml", "channel", bl_channel_id)
@@ -248,8 +258,7 @@ async def on_message(message):
                 await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -272,8 +281,7 @@ async def on_message(message):
             amount = int(user_message.lower().split(" | ")[1])
 
             if amount > PURGE_MAX:
-                await message.channel.send(error_handler(f"**Amount of messages is too high, the max is {PURGE_MAX} messages**", "[purge] Amount of messages is too high"), reference = message)
-                await message.add_reaction("❌")
+                raise Exception("too many purge messages")
 
             else:
                 print(f"{col.Fore.RED}[purge] {col.Style.RESET_ALL}purging {amount} messages")
@@ -286,8 +294,7 @@ async def on_message(message):
                 await message.channel.send(f"Purge Complete :smiling_imp:\nDeleted {amount} messages")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -340,11 +347,12 @@ async def on_message(message):
                 case "test": description_embed = syntax_embed(command_name)
                 case "vc": description_embed = syntax_embed(command_name)
 
+                case _: raise Exception("invalid command syntax")
+                
             await message.channel.send(embed = description_embed, reference = message)
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -356,17 +364,19 @@ async def on_message(message):
     elif user_message.lower().startswith(f"{PREFIX} id"):
         try:
             args = user_message.lower().split(" | ")[1]
+
             if args == "server": await message.channel.send(f"Current server's ID: {server_id}", reference = message)
-            if args == "channel": await message.channel.send(f"Current channel's ID: {channel_id}", reference = message)
-            if args.startswith("user: "): 
+            elif args == "channel": await message.channel.send(f"Current channel's ID: {channel_id}", reference = message)
+            elif args.startswith("user: "): 
                 user_id = args.split("@")[1].removesuffix(">")
                 await message.channel.send(f"User's ID: {user_id}", reference = message)
+
+            else: raise Exception("invalid command syntax")
 
             await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -384,17 +394,21 @@ async def on_message(message):
                     case "idle":    await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.idle)
                     case "dnd":     await client.change_presence(activity = discord.Game(str(status_message)), status = discord.Status.dnd)
 
+                    case _: raise Exception("invalid command syntax")
+
             else:
                 match args:
                     case "online":  await client.change_presence(status = discord.Status.online)
                     case "offline": await client.change_presence(status = discord.Status.invisible)
                     case "idle":    await client.change_presence(status = discord.Status.idle)
                     case "dnd":     await client.change_presence(status = discord.Status.dnd)
+
+                    case _: raise Exception("invalid command syntax")
+
             await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -406,17 +420,17 @@ async def on_message(message):
             amount = args.split(" / ")[0]
             print(f"{col.Fore.RED}[spam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
 
+            if (len(text) + 1) * int(amount) >= 4000:
+                raise Exception("too many spam messages")
+
             for _ in range(int(amount)):
                 spam_message += f"{text}\n"
-            await message.channel.send(str(spam_message))
+
+            await message.channel.send(spam_message)
             await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            if str(e).lower().count("400 bad request") > 0:
-                await message.channel.send(error_handler("**Amount of messages is too high, the amount of characters times the number of messages cannot be more than 4000**\n", str(e)), reference = message)
-            else:
-                await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -427,8 +441,7 @@ async def on_message(message):
             amount = int(args.split(" / ")[0])
 
             if amount > MEGASPAM_MAX:
-                await message.channel.send(error_handler(f"**Amount of messages is too high, the max is {MEGASPAM_MAX} messages**", "[megaspam] Amount of messages is too high"), reference = message)
-                await message.add_reaction("❌")
+                raise Exception("too many megaspam messages")
 
             else:
                 print(f"{col.Fore.RED}[megaspam] {col.Style.RESET_ALL}spamming: {text}, {amount} times")
@@ -439,46 +452,29 @@ async def on_message(message):
                     await message.channel.send(text)
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
-
-    elif user_message.lower().startswith(f"{PREFIX} join"):
-        if message.author.voice:
-            channel = message.author.voice.channel
-            await channel.connect()
-            await message.channel.send("sure")
-        else:
-            await message.channel.send("i dont wanna vc by myself")
-
-    elif message.content.startswith(f"{PREFIX} leave"):
-        if message.guild.voice_client:
-            await message.guild.voice_client.disconnect()
-            await message.channel.send("fine")
-        else:
-            await message.channel.send("im not even in a vc")
 
     elif user_message.lower().startswith(f"{PREFIX} role"):
         try:
             args = user_message.lower().split(" | ")[1]
-            arg1 = args.split(" / ")[0]
-            arg2 = args.split(" / ")[1]
-            if arg1 == "add":
+            arg = args.split(" / ")[0]
+            role_name = args.split(" / ")[1]
+            if arg == "add":
                 member = message.author
-                role = get(member.guild.roles, name = arg2)
+                role = get(member.guild.roles, name = role_name)
                 await member.add_roles(role)
 
-            if arg1 == "remove":
+            if arg == "remove":
                 member = message.author
-                role = get(member.guild.roles, name = arg2)
+                role = get(member.guild.roles, name = role_name)
                 await member.remove_roles(role)
 
             await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Role Error", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -488,72 +484,79 @@ async def on_message(message):
     #     await message.add_reaction("☑️")
 
 
-    # elif user_message.lower().startswith(f"{PREFIX} last_error"):
-    #     update_config()
-    #     await message.channel.send(f"[Last recorded error message]: {last_error_message_YAML}")
-    #     await message.add_reaction("☑️")
-
-
     elif user_message.lower().startswith(f"{PREFIX} snipe"):
         await message.channel.send(f"[Last deleted message]: {snipe_message}")
         await message.add_reaction("☑️")
+
+
+    elif user_message.lower().startswith(f"{PREFIX} join"):
+        if message.author.voice:
+            channel = message.author.voice.channel
+            await channel.connect()
+            await message.channel.send("sure")
+
+        else:
+            await message.channel.send("i dont wanna vc by myself")
+
+
+    elif message.content.startswith(f"{PREFIX} leave"):
+        if message.guild.voice_client:
+            await message.guild.voice_client.disconnect()
+            await message.channel.send("fine")
+
+        else:
+            await message.channel.send("im not even in a vc")
 
 
     elif user_message.lower().startswith(f"{PREFIX} vc"):
         try:
             args_main = user_message.lower().split(" | ")[1]
             if args_main.startswith("play"):
+                file_name = args_main.split(" / ")[1]
                 if message.guild.voice_client:
-                    args = args_main.split(" / ")[1]
                     vc = message.guild.voice_client
-                    vc.play(discord.FFmpegPCMAudio(executable = "C:/Program Files (extracted)/ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe", source = "C:/Users/BWP09/Desktop/Misc/Code/Python/Discord/Bots/Hes_a_BOT_v1/data/vc_files/" + args))
-                    await message.add_reaction("☑️")
+                    vc.play(discord.FFmpegPCMAudio(executable = "C:/Program Files (extracted)/ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe", source = "C:/Users/BWP09/Desktop/Misc/Code/Python/Discord/Bots/Hes_a_BOT_v1/data/vc_files/" + file_name))
 
-                else:
-                    await message.channel.send("Im not connected to a VC")
-                    raise Exception("Not connected to voice channel")
+                else: raise Exception("Not connected to voice channel")
 
-            if args_main.startswith("stop"):
+            elif args_main.startswith("stop"):
                 if message.guild.voice_client:
                     vc = message.guild.voice_client
                     vc.stop()
-                    await message.add_reaction("☑️")
 
-                else:
-                    await message.channel.send("Im not connected to a VC")
-                    raise Exception("Not connected to voice channel")
+                else: raise Exception("Not connected to voice channel")
 
-            if args_main.startswith("pause"):
-                vc = message.guild.voice_client
-                if vc.is_playing():
-                    vc.pause()
-                    await message.add_reaction("☑️")
+            elif args_main.startswith("pause"):
+                if message.guild.voice_client:
+                    vc = message.guild.voice_client
+                    if vc.is_playing():
+                        vc.pause()
 
-                else:
-                    await message.channel.send("Im not playing anything")
-                    raise Exception("Not connected to voice channel")
+                    else: raise Exception("Audio not playing")
+                else: raise Exception("Not connected to voice channel")
 
-            if args_main.startswith("resume"):
-                vc = message.guild.voice_client
-                if vc.is_paused:
-                    vc.resume()
-                    await message.add_reaction("☑️")
+            elif args_main.startswith("resume"):
+                if message.guild.voice_client:
+                    vc = message.guild.voice_client
+                    if vc.is_paused:
+                        vc.resume()
 
-                else:
-                    await message.channel.send("Im not playing anything")
-                    raise Exception("Not connected to voice channel")
+                    else: raise Exception("Audio not paused")
+                else: raise Exception("Not connected to voice channel")
 
-            if args_main.startswith("list"):
+            elif args_main.startswith("list"):
                 names = "Files:\n"
                 files = os.listdir("data/vc_files/")
                 for file in files:
                     names += file + "\n"
                 await message.channel.send(names, reference = message)
-                await message.add_reaction("☑️")
+
+            else: raise Exception("invalid command syntax")
+
+            await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
@@ -564,8 +567,7 @@ async def on_message(message):
             await message.add_reaction("☑️")
 
         except Exception as e:
-            last_error_message = e
-            await message.channel.send(error_handler("Syntax", str(e)), reference = message)
+            await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
 
