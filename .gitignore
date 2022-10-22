@@ -4,6 +4,7 @@ data/images/
 data/config/data.yml
 data/config/token.yml
 data/config/blacklist.yml
+data/config/config.yml
 test.py
 .vscode/
 .vscode/*
