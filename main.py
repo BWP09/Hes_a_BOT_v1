@@ -1,4 +1,4 @@
-import discord, yaml, datetime, os, atexit, asyncio, random
+import discord, yaml, datetime, os, atexit, asyncio, random, re, urllib.request, pytube
 from dateutil import tz
 import colorama as col
 from discord.utils import get
@@ -39,7 +39,7 @@ def update_blacklist():
 
 def update_config():
     global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, BOT_ID, MEGASPAM_MAX, PURGE_MAX
-    global LOGS_PATH, IMAGES_PATH, VC_FILES_PATH, FFMPEG_EXEC_PATH
+    global LOGS_PATH, IMAGES_PATH, VC_FILES_PATH, VC_DOWNLOAD_PATH, FFMPEG_EXEC_PATH
     global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter
 
     with open("data/config/config.yml", "r") as file:
@@ -69,6 +69,7 @@ def update_config():
     LOGS_PATH = config["files"]["logs_path"]
     IMAGES_PATH = config["files"]["images_path"]
     VC_FILES_PATH = config["files"]["vc_files_path"]
+    VC_DOWNLOAD_PATH = config["files"]["vc_download_path"]
     FFMPEG_EXEC_PATH = config["files"]["ffmpeg_exec_path"]
 
     bl_server = blacklist["server"]
@@ -141,6 +142,26 @@ def exit_handler():
 
 def syntax_embed(command_name):
     return discord.Embed(title = f"Syntax Help: {command_name}", description = file_read(f"data/config/syntax_help/{command_name}.txt"), color=COLOR)
+
+def search_youtube(search_query: str):
+    html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + search_query.replace(" ", "+"))
+    video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+    video_link = "https://www.youtube.com/watch?v=" + video_ids[0]
+    return video_link
+
+def download_youtube(video_link: str):
+    link = pytube.YouTube(video_link)
+    video = link.streams.filter(only_audio = True).first()
+    out_file = video.download(output_path = VC_DOWNLOAD_PATH) 
+    base, ext = os.path.splitext(out_file)
+    new_file = base + '.mp3'
+    os.rename(out_file, new_file)
+
+    return new_file
+
+async def command_test(message): # EEEKKKKK
+    if message.content == "does it work?":
+        await message.channel.send("hahahahaha it works")
 
 update_config()
 atexit.register(exit_handler)
@@ -219,6 +240,7 @@ async def on_message(message):
         log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
         print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
 
+    await command_test(message)
 
     if author_id == BOT_ID: return
 
@@ -592,7 +614,23 @@ async def on_message(message):
                 files = os.listdir(VC_FILES_PATH)
                 for file in files:
                     names += file + "\n"
+
                 await message.channel.send(names, reference = message)
+
+            elif args_main.startswith("search"):
+                search_query = args_main.split(" / ")[1]
+
+                link = search_youtube(search_query)
+                await message.channel.send(f"Found video... now downloading", reference = message)
+
+                file_name = download_youtube(link)
+
+                if message.guild.voice_client:
+                    vc = message.guild.voice_client
+                    vc.play(discord.FFmpegPCMAudio(executable = FFMPEG_EXEC_PATH, source = file_name))
+                    await message.channel.send(f"playing file...", reference = message)
+
+                else: await message.channel.send("done!", reference = message)
 
             else: raise Exception("invalid command syntax")
 
