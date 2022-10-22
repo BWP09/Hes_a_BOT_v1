@@ -14,4 +14,5 @@ files:
   logs_path: "data/logs"
   images_path: "data/images"
   vc_files_path: "data/vc_files"
+  vc_download_path: "data/vc_files/yt_temp"
   ffmpeg_path:
