@@ -39,6 +39,7 @@ def update_blacklist():
 
 def update_config():
     global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, BOT_ID, MEGASPAM_MAX, PURGE_MAX
+    global LOGS_PATH, IMAGES_PATH, VC_FILES_PATH, FFMPEG_EXEC_PATH
     global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter
 
     with open("data/config/config.yml", "r") as file:
@@ -64,6 +65,11 @@ def update_config():
     COLOR = config["bot"]["color"]
     MEGASPAM_MAX = int(config["bot"]["megaspam_max"])
     PURGE_MAX = int(config["bot"]["purge_max"])
+
+    LOGS_PATH = config["files"]["logs_path"]
+    IMAGES_PATH = config["files"]["images_path"]
+    VC_FILES_PATH = config["files"]["vc_files_path"]
+    FFMPEG_EXEC_PATH = config["files"]["ffmpeg_exec_path"]
 
     bl_server = blacklist["server"]
     bl_channel = blacklist["channel"]
@@ -93,7 +99,7 @@ def convert_utc_time(input_time: str):
     return new_time.strftime('%m-%d-%Y %H:%M:%S')
 
 def log(file_name, text):
-    with open(f"data/logs/{file_name}.log", "a", encoding = "utf-8") as file:
+    with open(f"{LOGS_PATH}{file_name}.log", "a", encoding = "utf-8") as file:
         file.write(f"{text}\n")
 
 def file_append(file_name, text):
@@ -552,7 +558,7 @@ async def on_message(message):
                 file_name = args_main.split(" / ")[1]
                 if message.guild.voice_client:
                     vc = message.guild.voice_client
-                    vc.play(discord.FFmpegPCMAudio(executable = "C:/Program Files (extracted)/ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe", source = "C:/Users/BWP09/Desktop/Misc/Code/Python/Discord/Bots/Hes_a_BOT_v1/data/vc_files/" + file_name))
+                    vc.play(discord.FFmpegPCMAudio(executable = FFMPEG_EXEC_PATH, source = VC_FILES_PATH + file_name))
 
                 else: raise Exception("Not connected to voice channel")
 
@@ -583,7 +589,7 @@ async def on_message(message):
 
             elif args_main.startswith("list"):
                 names = "Files:\n"
-                files = os.listdir("data/vc_files/")
+                files = os.listdir(VC_FILES_PATH)
                 for file in files:
                     names += file + "\n"
                 await message.channel.send(names, reference = message)
@@ -621,13 +627,13 @@ async def on_message(message):
         await message.channel.send("is HOT AF")
 
     elif user_message.lower().count("jack") > 0:
-        await message.channel.send("did someone say jack....\n", file = discord.File("data/images/jackhigh.png"), reference = message)
+        await message.channel.send("did someone say jack....\n", file = discord.File(IMAGES_PATH + "jackhigh.png"), reference = message)
 
     elif user_message.lower() == "keegan":
         await message.channel.send("hehe")
 
     elif user_message.lower().count("hassan") > 0:
-        await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File("data/images/hassan_bozo.jpg"))
+        await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File(IMAGES_PATH + "hassan_bozo.jpg"))
 
     elif user_message.lower() == "brandon":
         await message.channel.send("SOURCE ENGINE")
@@ -686,8 +692,8 @@ async def on_message(message):
     elif user_message.lower().count("sus") > 0 and user_message.lower().count("jesus") == 0:
         rand_int = random.randint(0, 1)
         match rand_int:
-            case 0: await message.channel.send("why so sussy son?", reference = message)
-            case 1: await message.channel.send("sussy bussy busty baka", reference = message)
+            case 0: await message.channel.send("susssss", reference = message)
+            case 1: await message.channel.send("sussy bussy", reference = message)
 
     elif user_message.lower() == "why":
         rand_int = random.randint(0, 1)
@@ -714,14 +720,12 @@ async def on_message(message):
             case 0: await message.channel.send("omg so lol", reference = message)
             case 1: await message.channel.send("lol", reference = message)
 
-    elif user_message.lower().count("amogus") > 0:
+    elif user_message.lower().count("amogus") > 0 or user_message.lower().count("among us") > 0:
         rand_int = random.randint(0, 2)
         match rand_int:
             case 0: await message.channel.send("sus")
             case 1: await message.channel.send("sus sus")
             case 2: await message.channel.send("sussy")
-
-    elif user_message.lower().count("bottom") > 0: return
 
     elif user_message.lower().count("bot ") > 0:
         await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)

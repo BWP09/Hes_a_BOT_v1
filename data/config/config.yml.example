@@ -9,3 +9,9 @@ bot:
   playing_status:
   megaspam_max:
   purge_max:
+
+files:
+  logs_path: "data/logs"
+  images_path: "data/images"
+  vc_files_path: "data/vc_files"
+  ffmpeg_path:
