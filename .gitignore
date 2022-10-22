@@ -1,9 +1,9 @@
 data/logs/
 data/vc_files/
 data/images/
-data.yml
-token.yml
-blacklist.yml
+data/config/data.yml
+data/config/token.yml
+data/config/blacklist.yml
 test.py
 .vscode/
 .vscode/*

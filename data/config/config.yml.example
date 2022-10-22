@@ -1,0 +1,11 @@
+bot:
+  id:
+  prefix:
+  admin:
+    admin_name:
+    admin_id:
+  color:
+  version:
+  playing_status:
+  megaspam_max:
+  purge_max:

@@ -1,5 +1,5 @@
-import trace
 import discord, yaml, datetime, os, atexit, asyncio, random
+from dateutil import tz
 import colorama as col
 from discord.utils import get
 
@@ -81,6 +81,17 @@ def get_date_time(type):
         case 2: return datetime.datetime.now().strftime("%m/%d/%Y")
         case 3: return datetime.datetime.now().strftime("%H:%M:%S")
 
+def convert_utc_time(input_time: str):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+
+    utc = datetime.datetime.strptime(input_time.split(".")[0], '%Y-%m-%d %H:%M:%S')
+    utc = utc.replace(tzinfo = from_zone)
+    local_time = utc.astimezone(to_zone).replace(tzinfo=None)
+    new_time = datetime.datetime.strptime(str(local_time), "%Y-%m-%d %H:%M:%S")
+
+    return new_time.strftime('%m-%d-%Y %H:%M:%S')
+
 def log(file_name, text):
     with open(f"data/logs/{file_name}.log", "a", encoding = "utf-8") as file:
         file.write(f"{text}\n")
@@ -100,7 +111,6 @@ def file_read(file_name):
         return file.read()
 
 def error_handler(error):
-    update_config()
     print(f"{col.Fore.YELLOW}>[Error Handler]: {error}")
 
     if error == "list index out of range": text = "Syntax error"
@@ -180,16 +190,32 @@ async def on_message(message):
     channel = str(message.channel)
     channel_id = int(message.channel.id)
     server = str(message.guild)
+
     try: server_id = int(message.guild.id)
     except: server_id = 0
 
     # try: url = message.attachments[0].url
     # except: url = 0
 
-    log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
-    print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
+    if message.reference != None:
+        ref_message = await message.channel.fetch_message(message.reference.message_id) #ref_message.content
+
+        ref_content = str(ref_message.content)
+        ref_username = str(ref_message.author).split("#")[0]
+        ref_author = str(ref_message.author)
+        ref_author_id = int(ref_message.author.id)
+        ref_message_time = convert_utc_time(str(ref_message.created_at))
+
+        log(f"LOG-{get_date_time(1)}", f"= [{ref_message_time}]: [{server}: {channel}]: {ref_username}: {ref_content}\n^ [{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
+        print(f"{col.Fore.YELLOW}= {col.Fore.LIGHTMAGENTA_EX}[{ref_message_time}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{ref_username}: {col.Fore.LIGHTBLUE_EX}{ref_content}\n{col.Fore.YELLOW}^ {col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
+
+    else:
+        log(f"LOG-{get_date_time(1)}", f"[{get_date_time(0)}]: [{server}: {channel}]: {username}: {user_message}")
+        print(f"{col.Fore.LIGHTMAGENTA_EX}[{get_date_time(0)}]: {col.Fore.GREEN}[{server}: {col.Fore.LIGHTGREEN_EX}{channel}{col.Fore.GREEN}]: {col.Fore.CYAN}{username}: {col.Fore.LIGHTBLUE_EX}{user_message}")
+
 
     if author_id == BOT_ID: return
+
 
     elif user_message.lower().startswith(f"{PREFIX} blacklist"):
         try:
@@ -271,14 +297,25 @@ async def on_message(message):
 
 
     elif user_message.lower().startswith("d!<"):
-        message_id = user_message.lower().removeprefix("d!<").removesuffix(">")
+        message_id = int(user_message.lower().removeprefix("d!<").removesuffix(">"))
         delete_message = await message.channel.fetch_message(message_id)
+        await message.add_reaction("☑️")
         await delete_message.delete()
+        await asyncio.sleep(1)
+        await message.delete()
 
 
-    elif user_message.lower().startswith(f"{PREFIX} purge"):
+    elif user_message.lower().startswith(f"{PREFIX} purge") or user_message.lower().startswith("p!<"): # ADD ALTERNATIVE TO THIS COMMAND WITH SIMPLER SYNTAX
         try:
-            amount = int(user_message.lower().split(" | ")[1])
+            case = 0
+            amount = 0
+
+            if user_message.lower().startswith(f"{PREFIX} purge"):
+                amount = int(user_message.lower().split(" | ")[1])
+                case = 1
+
+            elif user_message.lower().startswith("p!<"):
+                amount = int(user_message.lower().removeprefix("p!<").removesuffix(">"))
 
             if amount > PURGE_MAX:
                 raise Exception("too many purge messages")
@@ -291,7 +328,8 @@ async def on_message(message):
                 async for delete_message in message.channel.history(limit = amount + 1):
                     await delete_message.delete()
 
-                await message.channel.send(f"Purge Complete :smiling_imp:\nDeleted {amount} messages")
+                if case == 1:
+                    await message.channel.send(f"Purge Complete :smiling_imp:\nDeleted {amount} messages")
 
         except Exception as e:
             await message.channel.send(error_handler(str(e)), reference = message)
@@ -347,7 +385,7 @@ async def on_message(message):
                 case "vc": description_embed = syntax_embed(command_name)
 
                 case _: raise Exception("invalid command syntax")
-                
+
             await message.channel.send(embed = description_embed, reference = message)
 
         except Exception as e:
@@ -587,44 +625,44 @@ async def on_message(message):
 
     elif user_message.lower() == "keegan":
         await message.channel.send("hehe")
-    
+
     elif user_message.lower().count("hassan") > 0:
         await message.channel.send("kidnapped your family + L + ratio + bozo", file = discord.File("data/images/hassan_bozo.jpg"))
-    
+
     elif user_message.lower() == "brandon":
         await message.channel.send("SOURCE ENGINE")
 
     elif user_message.lower() == "rodrigo":
         await message.channel.send("is gay", reference = message)
-    
+
     elif user_message.lower().count("gay") > 0:
         await message.channel.send("Rodrigo is so gay lol its true. One time he dm'ed hesa and said: \"I am so gay\"\nIts true")
 
     elif user_message.lower() == "yeah":
         await message.channel.send("yeah")
-    
+
     elif user_message.lower() == "ok" or user_message.lower() == "okay":
         await message.channel.send("ok then bud")
-    
+
     elif user_message.lower() == "oh":
         await message.channel.send("bawls")
-    
+
     elif user_message.lower() == "big sad":
         await message.channel.send(":cry:")
 
     elif user_message.lower() == "mega sad":
         await message.channel.send(":cry: :cry: :cry: :cry: :cry:")
-    
+
     elif user_message.lower() == "chunky sad":
         await message.channel.send(":cry:\nhttps://i1.sndcdn.com/artworks-G7nQ5blTKxfiVCc0-YuOnUQ-t500x500.jpg")
 
     elif user_message.lower() == "no":
         await message.channel.send("how about yes")
-    
+
     elif user_message.lower().count("dm me") > 0:
         await message.channel.send("ok", reference = message)
         await message.author.send("you are now DM-ed!")
-    
+
     elif user_message.lower().count("dumb") > 0:
         await message.channel.send("you're dumb")
 
@@ -633,37 +671,37 @@ async def on_message(message):
 
     elif user_message.lower().count("valorant") > 0:
         await message.channel.send("hold on i gotta pee")
-    
+
     elif user_message.lower().count("jk") > 0:
         await message.channel.send("i dont think so :thinking:")
-    
+
     elif user_message.lower() == "please":
         await message.channel.send("with a cherry on top...", reference = message)
 
     elif user_message.lower().count("shut up") > 0:
         await message.channel.send("i dont shut up, i grow up, and when i look at you i throw up", reference = message)
-    
+
     elif user_message.lower().count("jesus") > 0: return
-    
+
     elif user_message.lower().count("sus") > 0 and user_message.lower().count("jesus") == 0:
         rand_int = random.randint(0, 1)
         match rand_int:
             case 0: await message.channel.send("why so sussy son?", reference = message)
             case 1: await message.channel.send("sussy bussy busty baka", reference = message)
-    
+
     elif user_message.lower() == "why":
         rand_int = random.randint(0, 1)
         match rand_int:
             case 0: await message.channel.send("because yes", reference = message)
             case 1: await message.channel.send("why not?", reference = message)
-        
+
     elif user_message.lower() == "yes":
         rand_int = random.randint(0, 2)
         match rand_int:
             case 0: await message.channel.send("sure")
             case 1: await message.channel.send("ok")
             case 2: await message.channel.send("fur sure...")
-    
+
     elif user_message.lower().count("kys") > 0:
         rand_int = random.randint(0, 1)
         match rand_int:
@@ -675,7 +713,7 @@ async def on_message(message):
         match rand_int:
             case 0: await message.channel.send("omg so lol", reference = message)
             case 1: await message.channel.send("lol", reference = message)
-    
+
     elif user_message.lower().count("amogus") > 0:
         rand_int = random.randint(0, 2)
         match rand_int:
@@ -687,7 +725,7 @@ async def on_message(message):
 
     elif user_message.lower().count("bot ") > 0:
         await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)
-    
+
     elif user_message.lower().endswith("bot"):
         await message.channel.send("Im not a bot.... thats so mean :cry:", reference = message)
 

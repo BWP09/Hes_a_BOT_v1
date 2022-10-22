@@ -4,7 +4,8 @@ response_channel:
 - 974028792265855026
 - 1004899614895382728
 - 1008166863429173339
-response_server: []
+response_server:
+- 1032073877293105314
 role: []
 server: []
 user: []

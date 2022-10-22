@@ -5,7 +5,7 @@ bot:
     admin_name: BWP09
     admin_id: 778024940158844938
   color: 0x009f9f
-  version: R.1.2.1..13.10.22
+  version: R.1.2.2..19.10.22
   playing_status: 'Type "hesa help"'
   megaspam_max: 30
   purge_max: 10
