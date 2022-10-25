@@ -38,7 +38,7 @@ def update_blacklist():
         blacklist_UPDATED = yaml.safe_load(file)
 
 def update_config():
-    global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, COLOR, BOT_ID, MEGASPAM_MAX, PURGE_MAX
+    global TOKEN, PREFIX, ADMIN_NAME, ADMIN_ID, EMBED_COLOR, PLAYING_STATUS, VERSION, BOT_ID, MEGASPAM_MAX, PURGE_MAX
     global LOGS_PATH, IMAGES_PATH, VC_FILES_PATH, VC_DOWNLOAD_PATH, FFMPEG_EXEC_PATH
     global bl_server, bl_channel, bl_response_server, bl_response_channel, bl_user, snipe_message, kid_counter
 
@@ -62,7 +62,6 @@ def update_config():
     EMBED_COLOR = config["bot"]["color"]
     PLAYING_STATUS = config["bot"]["playing_status"]
     VERSION = config["bot"]["version"]
-    COLOR = config["bot"]["color"]
     MEGASPAM_MAX = int(config["bot"]["megaspam_max"])
     PURGE_MAX = int(config["bot"]["purge_max"])
 
@@ -141,7 +140,7 @@ def exit_handler():
     print(f"{col.Style.RESET_ALL}Closed")
 
 def syntax_embed(command_name):
-    return discord.Embed(title = f"Syntax Help: {command_name}", description = file_read(f"data/config/syntax_help/{command_name}.txt"), color=COLOR)
+    return discord.Embed(title = f"Syntax Help: {command_name}", description = file_read(f"data/config/syntax_help/{command_name}.txt"), color=EMBED_COLOR)
 
 def search_youtube(search_query: str):
     html = urllib.request.urlopen("https://www.youtube.com/results?search_query=" + search_query.replace(" ", "+"))
@@ -379,13 +378,13 @@ async def on_message(message):
 
 
     elif user_message.lower().startswith(f"{PREFIX} help"):
-        embed_var = discord.Embed(title = "Help Command", description = file_read("data/config/help_file.txt"), color = COLOR)
+        embed_var = discord.Embed(title = "Help Command", description = file_read("data/config/help_file.txt"), color = EMBED_COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
 
 
     elif user_message.lower().startswith(f"{PREFIX} *help*"):
-        embed_var = discord.Embed(title = "*Help* Command", description = file_read("data/config/help_file_secrete.txt"), color = COLOR)
+        embed_var = discord.Embed(title = "*Help* Command", description = file_read("data/config/help_file_secrete.txt"), color = EMBED_COLOR)
         await message.channel.send(embed = embed_var, reference = message)
         await message.add_reaction("☑️")
 
