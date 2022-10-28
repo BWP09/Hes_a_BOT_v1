@@ -93,7 +93,7 @@ def convert_utc_time(input_time: str):
 
     utc = datetime.datetime.strptime(input_time.split(".")[0], '%Y-%m-%d %H:%M:%S')
     utc = utc.replace(tzinfo = from_zone)
-    local_time = utc.astimezone(to_zone).replace(tzinfo=None)
+    local_time = utc.astimezone(to_zone).replace(tzinfo = None)
     new_time = datetime.datetime.strptime(str(local_time), "%Y-%m-%d %H:%M:%S")
 
     return new_time.strftime('%m-%d-%Y %H:%M:%S')
@@ -650,6 +650,9 @@ async def on_message(message):
             await message.channel.send(error_handler(str(e)), reference = message)
             await message.add_reaction("❌")
 
+    elif user_message.lower().startswith(f"{PREFIX} hitlist"):
+        embed_var = discord.Embed(title = "HITLSIT", description = "1: Rodrigo", color = EMBED_COLOR)
+        await message.channel.send(embed = embed_var, reference = message)
 
     elif server_id in bl_response_server: return
     elif channel_id in bl_response_channel: return
