@@ -1,4 +1,4 @@
-# He's a BOT
+# He's a BOT V1 (discontinued)
 
 This is the code for my terrible discord bot. It might be the worst spaghetti you'll ever see...
 
